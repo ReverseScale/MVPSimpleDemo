@@ -48,9 +48,7 @@
 - (NSArray *)processOriginDataToUIFriendlyData:(NSArray *) originData {
     NSMutableArray *friendlyUIData = [NSMutableArray new];
     for (NSDictionary *dic in originData) {
-        if ([[dic valueForKey:@"gender"] isEqualToString:@"male"]) {
             [friendlyUIData addObject:dic];
-        }
     }
     return friendlyUIData;
 }
