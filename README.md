@@ -295,20 +295,20 @@ Iyad Agha's Blog：http://iyadagha.com/using-mvp-ios-swift/
 ---
 # 中文说明
 
-## 用一个简单的用户界面展示：在iOS中用使用 MVP
+## 用一个简单的用户列表界面展示：在iOS中用使用 MVP
 
-在开发iOS应用程序时，Model-View-Controller是一种常见的设计模式。 通常，视图层由UIKit中的元素组成，这些元素由编程定义或xib文件定义，模型层包含应用程序的业务逻辑，并且由UIViewController类表示的控制器层是模型和视图之间的粘合剂。
+在开发iOS应用程序时，Model-View-Controller是一种常见的设计模式。 通常，View层由UIKit中的元素组成，这些元素由代码定义或xib文件定义，Model层包含应用程序的业务逻辑，并且由UIViewController类表示的Controller层是Model和View之间的粘合剂。
 
-![](http://og1yl0w9z.bkt.clouddn.com/18-3-28/37046852.jpg)
+![](https://user-gold-cdn.xitu.io/2018/3/29/1626f64ab6521c1d?w=733&h=117&f=png&s=17006)
 
-这种模式的一个很好的部分是将业务逻辑和业务规则封装在模型层中。但是，UIViewController仍然包含UI相关的逻辑，它的意思是：
+这种模式的一个很好的部分是将业务逻辑和业务规则封装在Model层中。但是，UIViewController仍然包含UI相关的逻辑，它的意思是：
 
-* 调用业务逻辑并将结果绑定到视图
-* 管理视图元素
-* 将来自模型层的数据转换为UI友好的格式
-* 导航逻辑
-* 管理用户界面状态
-* 和更多 …
+* 调用业务逻辑并将结果绑定到View
+* 管理View元素
+* 将来自Model层的数据转换为UI友好的格式
+* navigation逻辑
+* 管理用户UI状态
+* 更多 …
 
 承担所有这些责任，ViewController经常会变得巨大且难以维护并进行测试。
 
@@ -318,19 +318,19 @@ MVP模式在1996年由Mike Potel首次引入，多年来曾多次讨论过。在
 MVP有许多变体，它们之间的差别很小。在这篇文章中，我选择了目前应用程序开发中常用的常用程序。这个变体的特点是：
 
 * MVP的视图部分由UIViews和UIViewController组成
-* 视图委托给演示者的用户交互
-* 演示者包含处理用户交互的逻辑
-* 演示者与模型层进行通信，将数据转换为UI友好的格式，并更新视图
-* 演示者对UIKit没有依赖性
+* View委托给presenter的用户交互
+* presenter包含处理用户交互的逻辑
+* presenter与Model层进行通信，将数据转换为UI友好的格式，并更新视图
+* presenter对UIKit没有依赖性
 * 视图是passiv（转储）
 
-![](http://og1yl0w9z.bkt.clouddn.com/18-3-28/45649464.jpg)
+![](https://user-gold-cdn.xitu.io/2018/3/29/1626f64ab50f3c0e?w=742&h=114&f=png&s=26020)
 
 以下示例将向您展示如何在操作中使用MVP。
 
-我们的例子是一个非常简单的应用程序，显示一个简单的用户列表。 你可以从hier获得完整的源代码：https：//github.com/iyadagha/iOS-mvp-sample。
+我们的例子是一个非常简单的应用程序，显示一个简单的用户列表。 你可以从Github获得完整的源代码：https：//github.com/iyadagha/iOS-mvp-sample。（Swift+OC双版本实现示例在文章末处）
 
-让我们从用户的简单数据模型开始：
+让我们从用户信息的简单数据模型开始：
 
 ```Swift
 struct User {
@@ -370,7 +370,7 @@ struct UserViewData{
 }
 ```
 
-之后，我们需要对视图进行抽象，这可以在演示者不知道UIViewController的情况下使用。 我们通过定义一个协议UserView来做到这一点：
+之后，我们需要对视图进行抽象，这可以在presenter不知道UIViewController的情况下使用。 我们通过定义一个协议UserView来做到这一点：
 
 ```Swift
 protocol UserView: NSObjectProtocol {
@@ -381,7 +381,7 @@ protocol UserView: NSObjectProtocol {
 }
 ```
 
-该协议将在演示者中使用，稍后将从UIViewController实现。 基本上，协议包含在演示者中调用的用于控制视图的函数。
+该协议将在presenter中使用，稍后将从UIViewController实现。 基本上，协议包含在presenter中调用的用于控制视图的函数。
 
 用户本身看起来像：
 
@@ -420,8 +420,8 @@ class UserPresenter {
 }
 ```
 
-主持人将函数attachView（view：UserView）和attachView（view：UserView）用于UIViewContoller生命周期方法中的更多控制，我们将在后面看到。
-请注意，将用户转换为UserViewData是演示者的责任。 另请注意，userView必须很弱以避免保留周期。
+路由将函数attachView（view：UserView）和attachView（view：UserView）用于UIViewContoller生命周期方法中的更多控制，我们将在后面看到。
+请注意，将用户转换为UserViewData是presenter的责任。 另请注意，userView必须很弱以避免保留周期。
 
 实现的最后一部分是UserViewController：
 
@@ -448,7 +448,7 @@ class UserViewController: UIViewController {
 
 我们的ViewController有一个tableView来显示用户列表，一个emptyView显示，如果没有用户可用，一个activityIndicator在应用程序加载用户时显示。 此外，它还有一个userPresenter和一个用户列表。
 
-在viewDidLoad方法中，UserViewController将自己附加到演示者。 这是可行的，因为我们很快会看到UserViewController实现了UserView协议。
+在viewDidLoad方法中，UserViewController将自己附加到presenter。 这是可行的，因为我们很快会看到UserViewController实现了UserView协议。
 
 ```Swift
 extension UserViewController: UserView {
@@ -497,11 +497,11 @@ extension UserViewController: UITableViewDataSource {
 }
 ```
 
-![](http://og1yl0w9z.bkt.clouddn.com/18-3-28/45624241.jpg)
+![](https://user-gold-cdn.xitu.io/2018/3/29/1626f64ab1831231?w=358&h=704&f=png&s=27167)
 
 ### 单元测试
 
-做MVP的好处之一是能够测试UI逻辑的最大部分，而无需测试UIViewController本身。 所以如果我们的主持人有一个很好的单元测试覆盖率，我们不需要再为UIViewController编写单元测试。
+做MVP的好处之一是能够测试UI逻辑的最大部分，而无需测试UIViewController本身。 所以如果我们的presenter有一个很好的单元测试覆盖率，我们不需要再为UIViewController编写单元测试。
 
 现在让我们来看看我们如何测试UserPresenter。 首先我们定义两个模拟工作。 一个模拟是UserService使它提供所需的用户列表。 另一个模拟是UserView来验证方法是否被正确调用。
 
@@ -531,7 +531,7 @@ class UserViewMock : NSObject, UserView{
 }
 ```
 
-现在，我们可以测试当服务提供非空的用户列表时，演示者的行为是否正确。
+现在，我们可以测试当服务提供非空的用户列表时，presenter的行为是否正确。
 
 ```Swift
 class UserPresenterTest: XCTestCase {
@@ -556,7 +556,7 @@ class UserPresenterTest: XCTestCase {
 }
 ```
 
-同样，如果服务返回空的用户列表，我们可以测试演示者是否正常工作。
+同样，如果服务返回空的用户列表，我们可以测试presenter是否正常工作。
 
 ```Swift
 func testShouldSetEmptyIfNoUserAvailable() {
@@ -573,12 +573,12 @@ func testShouldSetEmptyIfNoUserAvailable() {
     }
 ```
 
-### 去哪里去
+### 演变历程
 
 我们已经看到MVP是MVC的演变。 我们只需要将UI逻辑放在一个名为Presenter的额外组件中，并使我们的UIViewController passiv（dump）成为可能。
 
-MVP的特点之一是，主持人和观点都相互认识。 该视图（在本例中为UIViewController）提供了演示者的引用，反之亦然。
-尽管可以使用反应式编程来删除演示者中使用的视图的参考。 通过使用ReactiveCocoa或RxSwift等响应式框架，可以构建一个体系结构，其中只有视图知道演示者，反之亦然。 在这种情况下，该架构将被称为MVVM。
+MVP的特点之一是，presenter 和 View 都相互通信。 该视图（在本例中为UIViewController）提供了presenter的引用，反之亦然。
+尽管可以使用响应式编程来删除presenter中使用的视图的参考。 通过使用ReactiveCocoa或RxSwift等响应式框架，可以构建一个体系结构，其中只有视图知道presenter，反之亦然。 在这种情况下，该架构将被称为MVVM。
 
 #### 文章来源
 
